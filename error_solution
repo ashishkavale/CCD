@@ -1,0 +1,145 @@
+The error you're encountering:
+
+```
+git@github.com: Permission denied (publickey).
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights and the repository exists.
+```
+
+This error typically occurs when there is an issue with your SSH authentication. Git is trying to use SSH to communicate with GitHub, but it is either not finding a valid SSH key or the SSH key is not associated with your GitHub account.
+
+### Here's how to troubleshoot and resolve the issue:
+
+### **1. Check if You Have an SSH Key Set Up Locally**
+
+First, check if you have an SSH key generated on your local machine.
+
+Run the following command to see if any SSH keys are present:
+
+```bash
+ls -al ~/.ssh
+```
+
+This will list all the files in your SSH directory. Look for files like `id_rsa`, `id_ed25519`, `id_rsa.pub`, or `id_ed25519.pub`. These are your private and public SSH keys.
+
+* If you don’t see any keys, you need to **generate a new SSH key**.
+
+### **2. Generate a New SSH Key (If Necessary)**
+
+If you don't have an SSH key or want to generate a new one, follow these steps:
+
+1. **Generate the SSH Key**:
+   Run the following command (replace with your GitHub email):
+
+   ```bash
+   ssh-keygen -t ed25519 -C "your_email@example.com"
+   ```
+
+   If you’re using an older system that doesn’t support `ed25519`, you can use RSA:
+
+   ```bash
+   ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+   ```
+
+   When prompted to "Enter a file in which to save the key", just press Enter to save it in the default location (`~/.ssh/id_ed25519` or `~/.ssh/id_rsa`).
+
+   **Optional**: You can add a passphrase for additional security, or just press Enter for no passphrase.
+
+2. **Start the SSH Agent**:
+
+   After generating the key, make sure the SSH agent is running by executing the following:
+
+   ```bash
+   eval "$(ssh-agent -s)"
+   ```
+
+3. **Add the SSH Key to the SSH Agent**:
+
+   Add your newly created key to the SSH agent with the command:
+
+   ```bash
+   ssh-add ~/.ssh/id_ed25519
+   ```
+
+   (If you used `id_rsa`, replace `id_ed25519` with `id_rsa`.)
+
+### **3. Add the SSH Key to GitHub**
+
+Now you need to add the SSH public key to your GitHub account:
+
+1. **Copy your public SSH key** to the clipboard:
+
+   Run the following command to display your public key:
+
+   ```bash
+   cat ~/.ssh/id_ed25519.pub
+   ```
+
+   (If you used `id_rsa`, use `cat ~/.ssh/id_rsa.pub` instead.)
+
+   Copy the entire key that appears in the terminal.
+
+2. **Add the key to GitHub**:
+
+   * Go to [GitHub SSH Keys settings](https://github.com/settings/keys).
+   * Click **New SSH Key**.
+   * Paste the copied SSH key into the "Key" field and give it a descriptive title (e.g., "My Laptop SSH Key").
+   * Click **Add SSH Key**.
+
+### **4. Test the SSH Connection to GitHub**
+
+Once you've added the key to GitHub, test your SSH connection:
+
+```bash
+ssh -T git@github.com
+```
+
+If everything is set up correctly, you should see something like:
+
+```
+Hi username! You've successfully authenticated, but GitHub does not provide shell access.
+```
+
+If you see this, it means that your SSH key is now properly associated with your GitHub account, and you should be able to push and pull from your repository.
+
+### **5. Check Your Remote URL**
+
+Make sure that your remote repository URL is set to use SSH, not HTTPS. Run:
+
+```bash
+git remote -v
+```
+
+You should see something like this:
+
+```
+origin  git@github.com:username/repository.git (fetch)
+origin  git@github.com:username/repository.git (push)
+```
+
+If it shows an HTTPS URL instead of SSH (`https://github.com/...`), you can change it to SSH with:
+
+```bash
+git remote set-url origin git@github.com:username/repository.git
+```
+
+### **6. Try Pushing Again**
+
+Now that everything is set up, try pushing again:
+
+```bash
+git push -u origin main
+```
+
+If everything is configured correctly, the push should work without the permission error.
+
+### **Troubleshooting Checklist**
+
+* **Correct SSH key**: Ensure that your public key is added to GitHub and is linked with the correct GitHub account.
+* **SSH agent running**: Ensure the SSH agent is running and the key is added to it.
+* **Correct remote URL**: Make sure the remote URL is using SSH (`git@github.com:...`) rather than HTTPS.
+* **Correct GitHub username**: Ensure you're using the correct GitHub username for your repository.
+
+Let me know if you run into any issues, and I can help further!
+
